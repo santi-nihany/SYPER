@@ -1,0 +1,2 @@
+# Nmap 7.98 scan initiated Sun Sep 28 19:24:13 2025 as: nmap -sT -p 22,23,161,443,9933 -iL nmap_targets.txt -oG nmap_scan.txt
+# Nmap done at Sun Sep 28 19:24:20 2025 -- 4 IP addresses (0 hosts up) scanned in 7.06 seconds
