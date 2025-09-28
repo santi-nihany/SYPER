@@ -1,93 +1,121 @@
 #!/bin/bash
 
+# Script limpio para buscar servicios de chipotle.com usando solo Shodan
+# Output: IP,PUERTO,SERVICIO,DOMINIO en archivo shodan.txt
+
 # Configuración
 DOMAIN="chipotle.com"
-IPS_FILE="ip_blocks.txt"
-DEVICES_FILE="devices.txt"
+OUTPUT_FILE="shodan.txt"
 
+# Verificar que la API key de Shodan esté configurada
+if [ -z "$SHODAN_API_KEY" ]; then
+    echo "[-] Error: SHODAN_API_KEY no está configurada"
+    echo "[-] Configure su API key con: export SHODAN_API_KEY='su_api_key'"
+    exit 1
+fi
 
+# Inicializar Shodan CLI
 shodan init "$SHODAN_API_KEY"
 
 # Limpiar archivo de resultados
-> "$DEVICES_FILE"
+> "$OUTPUT_FILE"
 
-echo "[+] Iniciando descubrimiento de dispositivos para $DOMAIN"
+echo "[+] Iniciando búsqueda de servicios para $DOMAIN usando Shodan"
 
-# 1. Descubrimiento de subdominios y hosts con crt.sh
-echo "[+] Buscando subdominios en crt.sh..."
-curl -s "https://crt.sh/?q=%25.$DOMAIN&output=json" | jq -r '.[].name_value' | sed 's/\*\.//g' | sort -u > crt_hosts.txt
+# Buscar servicios directamente con el dominio en Shodan
+echo "[+] Buscando servicios asociados a $DOMAIN en Shodan..."
 
-echo "[+] Resolviendo direcciones IP de subdominios..."
-if [ -f "crt_hosts.txt" ] && [ -s "crt_hosts.txt" ]; then
-    while read host; do
-        dig +short "$host" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' >> resolved_ips.txt
-    done < crt_hosts.txt
-else
-    echo "[-] No hay subdominios para resolver"
-    touch resolved_ips.txt
-fi
+# Usar shodan search para buscar servicios del dominio
+shodan_output=$(shodan search "hostname:$DOMAIN" --fields ip_str,port,product,hostnames 2>/dev/null)
 
-# 2. Búsqueda de dispositivos con Shodan CLI
-echo "[+] Buscando en Shodan por organización..."
-shodan search --fields ip_str,port "org:'Chipotle'" >> shodan_results.txt 2>/dev/null
-
-echo "[+] Buscando en Shodan por bloques IP..."
-if [ -f "$IPS_FILE" ] && [ -s "$IPS_FILE" ]; then
-    while read ip_block; do
-        shodan search --fields ip_str,port "net:$ip_block" >> shodan_results.txt 2>/dev/null
-    done < "$IPS_FILE"
-else
-    echo "[-] Archivo $IPS_FILE no existe o está vacío, saltando búsqueda por bloques IP..."
-fi
-
-# 3. Escaneo de puertos IoT con nmap
-echo "[+] Escaneando puertos IoT con nmap..."
-if [ -f "$IPS_FILE" ] && [ -s "$IPS_FILE" ]; then
-    # Extraer rangos de IP del formato NetRange y crear archivo temporal para nmap
-    grep -oE '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ - [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+' "$IPS_FILE" > nmap_targets.txt
-    if [ -s "nmap_targets.txt" ]; then
-        nmap -sT -p 22,23,161,443,9933 -iL nmap_targets.txt -oG nmap_scan.txt >/dev/null 2>&1
-        if [ $? -ne 0 ]; then
-            echo "[-] Error en escaneo nmap, continuando sin resultados de nmap..."
-            touch nmap_scan.txt  # Crear archivo vacío para evitar errores
+if [ -n "$shodan_output" ]; then
+    echo "$shodan_output" | while read line; do
+        if [ -n "$line" ] && [[ "$line" != "" ]]; then
+            # Parsear la línea usando tabulación como separador
+            # Formato: IP<TAB>PORT<TAB>PRODUCT<TAB>HOSTNAMES
+            ip=$(echo "$line" | cut -f1)
+            port=$(echo "$line" | cut -f2)
+            product=$(echo "$line" | cut -f3)
+            hostnames=$(echo "$line" | cut -f4)
+            
+            # Determinar el servicio basado en el puerto (prioridad) y producto
+            if [[ $port == "80" ]]; then
+                service="http"
+            elif [[ $port == "443" ]]; then
+                service="https"
+            elif [[ $port == "22" ]] || [[ $product == *"ssh"* ]]; then
+                service="ssh"
+            elif [[ $port == "23" ]] || [[ $product == *"telnet"* ]]; then
+                service="telnet"
+            elif [[ $port == "161" ]] || [[ $product == *"snmp"* ]]; then
+                service="snmp"
+            elif [[ $port == "9933" ]]; then
+                service="custom"
+            elif [[ $port == "25" ]] || [[ $product == *"smtp"* ]]; then
+                service="smtp"
+            elif [[ $port == "53" ]] || [[ $product == *"dns"* ]]; then
+                service="dns"
+            elif [[ $port == "21" ]] || [[ $product == *"ftp"* ]]; then
+                service="ftp"
+            elif [[ $port == "110" ]] || [[ $product == *"pop3"* ]]; then
+                service="pop3"
+            elif [[ $port == "143" ]] || [[ $product == *"imap"* ]]; then
+                service="imap"
+            elif [[ $port == "993" ]] || [[ $product == *"imaps"* ]]; then
+                service="imaps"
+            elif [[ $port == "995" ]] || [[ $product == *"pop3s"* ]]; then
+                service="pop3s"
+            elif [[ $port == "587" ]] || [[ $product == *"smtp"* ]]; then
+                service="smtp-submission"
+            elif [[ $port == "465" ]] || [[ $product == *"smtps"* ]]; then
+                service="smtps"
+            elif [[ $port == "8443" ]]; then
+                service="https-alt"
+            else
+                # Usar el producto como servicio, o "unknown" si está vacío
+                if [ -n "$product" ] && [[ "$product" != "-" ]]; then
+                    service=$(echo "$product" | tr '[:upper:]' '[:lower:]' | cut -d' ' -f1)
+                else
+                    service="unknown"
+                fi
+            fi
+            
+            # Determinar el dominio - usar hostnames si está disponible, sino null
+            if [ -n "$hostnames" ] && [[ "$hostnames" != "-" ]] && [[ "$hostnames" != "" ]]; then
+                # Tomar el primer hostname disponible
+                domain=$(echo "$hostnames" | awk '{print $1}')
+            else
+                domain="null"
+            fi
+            
+            # Escribir resultado en el formato requerido: IP,PUERTO,SERVICIO,DOMINIO
+            echo "$ip,$port,$service,$domain" >> "$OUTPUT_FILE"
+            echo "[+] Servicio encontrado: $ip:$port ($service) - $domain"
         fi
-        rm -f nmap_targets.txt
+    done
+    
+    # Verificar si se encontraron resultados
+    if [ -f "$OUTPUT_FILE" ] && [ -s "$OUTPUT_FILE" ]; then
+        # Eliminar duplicados
+        sort -u "$OUTPUT_FILE" -o "${OUTPUT_FILE}.tmp"
+        mv "${OUTPUT_FILE}.tmp" "$OUTPUT_FILE"
+        
+        echo "[+] Se encontraron $(wc -l < "$OUTPUT_FILE") servicios únicos"
+        echo "[+] Resultados guardados en $OUTPUT_FILE"
+        
+        # Mostrar resumen de resultados
+        echo ""
+        echo "[+] Resumen de servicios encontrados:"
+        echo "IP,PUERTO,SERVICIO,DOMINIO"
+        cat "$OUTPUT_FILE"
     else
-        echo "[-] No se encontraron rangos de IP válidos en $IPS_FILE"
-        touch nmap_scan.txt  # Crear archivo vacío para evitar errores
+        echo "[-] No se encontraron servicios activos para $DOMAIN"
+        echo "IP,PUERTO,SERVICIO,DOMINIO" > "$OUTPUT_FILE"
     fi
 else
-    echo "[-] Archivo $IPS_FILE no existe o está vacío, saltando escaneo nmap..."
-    touch nmap_scan.txt  # Crear archivo vacío para evitar errores
+    echo "[-] No se pudieron obtener resultados de Shodan para $DOMAIN"
+    echo "IP,PUERTO,SERVICIO,DOMINIO" > "$OUTPUT_FILE"
 fi
 
-# 4. Procesar y consolidar resultados
-echo "[+] Consolidando resultados en $DEVICES_FILE..."
-
-# Agregar hosts de crt.sh
-if [ -f "crt_hosts.txt" ] && [ -s "crt_hosts.txt" ]; then
-    cat crt_hosts.txt >> "$DEVICES_FILE"
-fi
-
-# Agregar IPs resueltas
-if [ -f "resolved_ips.txt" ] && [ -s "resolved_ips.txt" ]; then
-    sort -u resolved_ips.txt >> "$DEVICES_FILE"
-fi
-
-# Agregar resultados de Shodan
-if [ -f "shodan_results.txt" ] && [ -s "shodan_results.txt" ]; then
-    awk '{print $1}' shodan_results.txt | sort -u >> "$DEVICES_FILE"
-fi
-
-# Agregar IPs activas de nmap
-if [ -f "nmap_scan.txt" ] && [ -s "nmap_scan.txt" ]; then
-    grep "Up" nmap_scan.txt | awk '{print $2}' >> "$DEVICES_FILE"
-fi
-
-# Eliminar duplicados y limpiar formato
-sort -u "$DEVICES_FILE" -o "$DEVICES_FILE"
-
-# 5. Limpieza de archivos temporales
-# rm -f crt_hosts.txt resolved_ips.txt shodan_results.txt nmap_scan.txt
-
-echo "[+] Finalizado. Se encontraron $(wc -l < $DEVICES_FILE) dispositivos/hosts únicos."
+echo ""
+echo "[+] Búsqueda completada. Ver $OUTPUT_FILE para detalles."
