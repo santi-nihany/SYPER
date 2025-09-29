@@ -1,4 +1,4 @@
-ip,port/proto,product,version,org,,domain
+ip,port/proto,product,version,org,domain
 104.130.144.171,443/tcp,Apache httpd,,Rackspace Hosting,marketing.chipotle.com
 104.130.251.163,443/tcp,Apache httpd,,Rackspace Hosting,staging.api.community.chipotle.com
 104.130.251.211,443/tcp,Apache httpd,,Rackspace Hosting,btf.chipotle.com
