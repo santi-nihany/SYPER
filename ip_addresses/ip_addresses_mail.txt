@@ -1,0 +1,12 @@
+# No se encontraron registros MX para btf.chipotle.com
+# No se encontraron registros MX para cafirefighters.chipotle.com
+# No se encontraron registros MX para cloud.email.chipotle.com
+# No se encontraron registros MX para facilities.chipotle.com
+# No se encontraron registros MX para marketing.chipotle.com
+# No se encontraron registros MX para sftp.chipotle.com
+# No se encontraron registros MX para socialportal.chipotle.com
+# No se encontraron registros MX para thankyou.chipotle.com
+# No se encontraron registros MX para traceability.chipotle.com
+# No se encontraron registros MX para view.email.chipotle.com
+67.231.144.37, 10, mxa-00200801.gslb.pphosted.com
+67.231.152.163, 10, mxb-00200801.gslb.pphosted.com
