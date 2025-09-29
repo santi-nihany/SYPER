@@ -1,0 +1,19 @@
+ip,port/proto,product,version,org,city,country,domain
+104.130.144.171,80/tcp,,,Rackspace Hosting,Dallas,United States,marketing.chipotle.com
+104.130.144.171,443/tcp,Apache httpd,,Rackspace Hosting,Dallas,United States,marketing.chipotle.com
+104.130.251.163,80/tcp,,,Rackspace Hosting,Dallas,United States,staging.api.community.chipotle.com
+104.130.251.163,443/tcp,Apache httpd,,Rackspace Hosting,Dallas,United States,staging.api.community.chipotle.com
+104.130.251.211,80/tcp,,,Rackspace Hosting,Dallas,United States,btf.chipotle.com
+104.130.251.211,443/tcp,Apache httpd,,Rackspace Hosting,Dallas,United States,btf.chipotle.com
+104.130.251.33,80/tcp,,,Rackspace Hosting,Dallas,United States,raceability.chipotle.com
+104.130.251.33,443/tcp,Apache httpd,,Rackspace Hosting,Dallas,United States,raceability.chipotle.com
+104.130.254.226,80/tcp,,,Rackspace Hosting,Dallas,United States,api.development.marketing.chipotle.com
+104.130.254.226,443/tcp,Apache httpd,2.4.63,Rackspace Hosting,Dallas,United States,api.development.marketing.chipotle.com
+104.239.144.247,80/tcp,Apache httpd,,Rackspace Hosting,Dallas,United States,staging.facilities.chipotle.com
+104.239.144.247,443/tcp,,,Rackspace Hosting,Dallas,United States,staging.facilities.chipotle.com
+104.239.245.179,80/tcp,,,Rackspace Cloud Servers,Dallas,United States,healthcarethanks.chipotle.com
+104.239.245.179,443/tcp,Apache httpd,,Rackspace Cloud Servers,Dallas,United States,healthcarethanks.chipotle.com
+104.239.247.191,80/tcp,,,Rackspace Cloud Servers,Dallas,United States,staging.btf.chipotle.com
+104.239.247.191,443/tcp,Apache httpd,,Rackspace Cloud Servers,Dallas,United States,staging.btf.chipotle.com
+129.213.192.201,443/tcp,nginx,1.29.0,Oracle Public Cloud,Ashburn,United States,as2securetest.chipotle.com;b2btest.chipotle.com
+129.213.70.239,4443/tcp,nginx,1.29.1,Oracle Public Cloud,Ashburn,United States,sftp.chipotle.com;b2b.chipotle.com;as2secure.chipotle.com
