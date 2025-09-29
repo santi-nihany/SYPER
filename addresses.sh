@@ -4,7 +4,7 @@ set -euo pipefail
 # Configurables
 INPUT_GLOB="devices.txt"
 MIN_IPS=10
-OUTFILE="shodan_cli_results.csv"
+OUTFILE="addresses.csv"
 FIELDS="ip_str,port,transport,product,version,org,os,data"  # data ~ banner/raw
 
 shodan init "$SHODAN_API_KEY"
