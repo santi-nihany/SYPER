@@ -1,0 +1,35 @@
+# Contactos de Reporte - Chipotle Mexican Grill
+# Generado: Sun Sep 28 21:03:13 -03 2025
+
+=== CONTACTOS DE DOMINIO ===
+## Gestión técnica y administrativa del dominio
+Tipo: Abuse de Dominio
+Contacto: Registrar Abuse Contact Email: domainabuse@cscglobal.com
+Canal: Email (WHOIS)
+Propósito: Reporte de actividades maliciosas relacionadas con el dominio
+---
+
+=== CONTACTOS DE BLOQUES IP ===
+
+=== CONTACTOS DE SEGURIDAD DE LA ORGANIZACIÓN ===
+Tipo: Seguridad/Abuse Organizacional
+Contacto: privacy@chipotle.com
+Canal: Email
+Propósito: Reporte de problemas de privacidad y seguridad de datos
+Fuente: Política de Privacidad del sitio web
+---
+Tipo: Accesibilidad Web
+Contacto: ADAWebsite@chipotle.com
+Canal: Email
+Propósito: Reporte de problemas de accesibilidad en el sitio web
+Fuente: Página de Accesibilidad
+---
+
+=== PROGRAMA BUG BOUNTY ===
+Tipo: Reporte de Vulnerabilidades
+Plataforma: Bugcrowd
+URL: https://bugcrowd.com/chipotle
+Canal: Plataforma Bugcrowd
+Propósito: Reporte formal de vulnerabilidades de seguridad
+---
+
